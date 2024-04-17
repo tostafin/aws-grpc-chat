@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/tostafin/aws-grpc-chat/broadcast";
+option go_package = "github.com/tostafin/aws-grpc-chat/proto";
 
 import "google/protobuf/timestamp.proto";
 
