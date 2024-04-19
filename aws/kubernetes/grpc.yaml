@@ -21,7 +21,7 @@ spec:
       containers:
       - name: grpc-demo
         # Update image before apply
-        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/helloworld-grpc:1.0
+        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
         imagePullPolicy: Always
         ports:
         - name: grpc-api

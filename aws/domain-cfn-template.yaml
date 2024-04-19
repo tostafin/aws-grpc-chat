@@ -7,23 +7,10 @@ Parameters:
     Default: "mnessel.pl"
 
 Resources:
-  HostedZone:
-    Type: AWS::Route53::HostedZone
-    Properties:
-      Name: !Ref DomainName
-
-  Certificate:
+ Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Ref DomainName
       SubjectAlternativeNames:
-        - "*." !Ref DomainName
+        - !Join [ "", ["*.", !Ref DomainName] ]
       ValidationMethod: DNS
-
-  ApiCustomDomain:
-    Type: AWS::ApiGatewayV2::DomainName
-    Properties:
-      DomainName: !Ref DomainName
-      DomainNameConfigurations:
-        - CertificateArn: !Ref Certificate
-
