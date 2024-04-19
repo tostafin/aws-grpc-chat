@@ -7,8 +7,9 @@ import (
 	"net"
 	"sync"
 
-	proto "github.com/tostafin/aws-grpc-chat/broadcast"
+	"github.com/tostafin/aws-grpc-chat/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Connection struct {
@@ -84,13 +85,15 @@ func main() {
 	// Register the pool with the gRPC server
 	proto.RegisterBroadcastServer(grpcServer, pool)
 
-	listener, err := net.Listen("tcp", ":9000")
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", ":9001")
 
 	if err != nil {
 		log.Fatalf("Error creating the server %v", err)
 	}
 
-	fmt.Println("Server started at port :9000")
+	fmt.Println("Server started at port :9001")
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Error creating the server %v", err)
