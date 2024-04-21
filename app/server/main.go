@@ -2,59 +2,100 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
 	"sync"
 
-	"github.com/tostafin/aws-grpc-chat/proto"
+	pb "github.com/tostafin/aws-grpc-chat/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-type Connection struct {
-	proto.UnimplementedBroadcastServer
-	stream proto.Broadcast_CreateStreamServer
+var (
+	port = flag.Int("port", 9000, "The server port")
+)
+
+type connection struct {
+	pb.UnimplementedBroadcastServer
+	stream pb.Broadcast_CreateStreamServer
 	id     string
 	active bool
 	error  chan error
 }
 
-type Pool struct {
+type broadcastServer struct {
 	logger *log.Logger
-	proto.UnimplementedBroadcastServer
-	Connection []*Connection
+	pb.UnimplementedBroadcastServer
+	connections []*connection
 }
 
-func (p *Pool) CreateStream(pconn *proto.Connect, stream proto.Broadcast_CreateStreamServer) error {
-	conn := &Connection{
+func (p *broadcastServer) CreateStream(user *pb.User, stream pb.Broadcast_CreateStreamServer) error {
+	if err := userValidations(user); err != nil {
+		log.Println("error with creating stream:", err)
+		return err
+	}
+
+	conn := &connection{
 		stream: stream,
-		id:     pconn.User.Id,
+		id:     user.Id,
 		active: true,
 		error:  make(chan error),
 	}
 
-	p.Connection = append(p.Connection, conn)
-	log.Printf("New stream created for user: %s\n", conn.id) // Log when a new stream is created
+	p.connections = append(p.connections, conn)
+	log.Println("new stream created for user:", conn.id) // Log when a new stream is created
 
 	return <-conn.error
 }
 
-func (s *Pool) BroadcastMessage(ctx context.Context, msg *proto.Message) (*proto.Close, error) {
+func messageValidation(msg *pb.Message) error {
+	if msg == nil {
+		return fmt.Errorf("message is not provided")
+	}
+	if msg.UserId == "" {
+		return fmt.Errorf("user id is empty")
+	}
+	if msg.Content == "" {
+		return fmt.Errorf("message content is empty")
+	}
+	if msg.Timestamp == nil {
+		return fmt.Errorf("message timestamp is not provided")
+	}
+	return nil
+}
+
+func userValidations(u *pb.User) error {
+	if u == nil {
+		return fmt.Errorf("user is not provided")
+	}
+	if u.Id == "" {
+		return fmt.Errorf("id is empty")
+	}
+
+	return nil
+}
+
+func (s *broadcastServer) BroadcastMessage(ctx context.Context, msg *pb.Message) (*pb.Close, error) {
 	wait := sync.WaitGroup{}
 	done := make(chan int)
 
-	for _, conn := range s.Connection {
+	if err := messageValidation(msg); err != nil {
+		log.Printf("error with message validation %v - error: %v \n", msg, err)
+		return &pb.Close{}, err
+	}
+
+	for _, conn := range s.connections {
 		wait.Add(1)
 
-		go func(msg *proto.Message, conn *Connection) {
+		go func(msg *pb.Message, conn *connection) {
 			defer wait.Done()
 
 			if conn.active {
-				log.Printf("Sending message to: %v from %v\n", conn.id, msg.Id) // Log when a message is sent
-				err := conn.stream.Send(msg)
-				if err != nil {
-					log.Printf("Error with Stream: %v - Error: %v\n", conn.stream, err)
+				log.Printf("sending message from: %v to: %v \n", msg.UserId, conn.id) // message is sent
+				if err := conn.stream.Send(msg); err != nil {
+					log.Println("error with stream:", conn.stream, err)
 					conn.active = false
 					conn.error <- err
 				}
@@ -68,34 +109,33 @@ func (s *Pool) BroadcastMessage(ctx context.Context, msg *proto.Message) (*proto
 	}()
 
 	<-done
-	return &proto.Close{}, nil
+	return &pb.Close{}, nil
 }
 
 func main() {
+	flag.Parse()
+
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+
+	if err != nil {
+		log.Fatalf("failed to listen %v", err)
+	}
+
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
 
-	// Create a new connection pool
-	var conn []*Connection
-
-	pool := &Pool{
-		Connection: conn,
+	s := &broadcastServer{
+		connections: []*connection{},
 	}
 
 	// Register the pool with the gRPC server
-	proto.RegisterBroadcastServer(grpcServer, pool)
+	pb.RegisterBroadcastServer(grpcServer, s)
 
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", ":9000")
-
-	if err != nil {
-		log.Fatalf("Error creating the server %v", err)
-	}
-
-	fmt.Println("Server started at port :9000")
+	log.Println("server listening at", listener.Addr().String())
 
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("Error creating the server %v", err)
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BroadcastClient interface {
-	CreateStream(ctx context.Context, in *Connect, opts ...grpc.CallOption) (Broadcast_CreateStreamClient, error)
+	CreateStream(ctx context.Context, in *User, opts ...grpc.CallOption) (Broadcast_CreateStreamClient, error)
 	BroadcastMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Close, error)
 }
 
@@ -39,7 +39,7 @@ func NewBroadcastClient(cc grpc.ClientConnInterface) BroadcastClient {
 	return &broadcastClient{cc}
 }
 
-func (c *broadcastClient) CreateStream(ctx context.Context, in *Connect, opts ...grpc.CallOption) (Broadcast_CreateStreamClient, error) {
+func (c *broadcastClient) CreateStream(ctx context.Context, in *User, opts ...grpc.CallOption) (Broadcast_CreateStreamClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Broadcast_ServiceDesc.Streams[0], Broadcast_CreateStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (c *broadcastClient) BroadcastMessage(ctx context.Context, in *Message, opt
 // All implementations must embed UnimplementedBroadcastServer
 // for forward compatibility
 type BroadcastServer interface {
-	CreateStream(*Connect, Broadcast_CreateStreamServer) error
+	CreateStream(*User, Broadcast_CreateStreamServer) error
 	BroadcastMessage(context.Context, *Message) (*Close, error)
 	mustEmbedUnimplementedBroadcastServer()
 }
@@ -93,7 +93,7 @@ type BroadcastServer interface {
 type UnimplementedBroadcastServer struct {
 }
 
-func (UnimplementedBroadcastServer) CreateStream(*Connect, Broadcast_CreateStreamServer) error {
+func (UnimplementedBroadcastServer) CreateStream(*User, Broadcast_CreateStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method CreateStream not implemented")
 }
 func (UnimplementedBroadcastServer) BroadcastMessage(context.Context, *Message) (*Close, error) {
@@ -113,7 +113,7 @@ func RegisterBroadcastServer(s grpc.ServiceRegistrar, srv BroadcastServer) {
 }
 
 func _Broadcast_CreateStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Connect)
+	m := new(User)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
