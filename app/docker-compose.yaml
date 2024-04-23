@@ -1,0 +1,9 @@
+version: '3'
+services:
+  envoy:
+    image: envoyproxy/envoy:dev-3aa26878b65b97ddead542696204da947d5cfcc6
+    ports:
+      - "9901:9901"
+      - "8080:8080"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
