@@ -5,7 +5,7 @@ var broadcast_pb = require("./broadcast_pb");
 var grpc = require("@improbable-eng/grpc-web").grpc;
 
 var Broadcast = (function () {
-  function Broadcast() { }
+  function Broadcast() {}
   Broadcast.serviceName = "Broadcast";
   return Broadcast;
 }());
@@ -15,7 +15,7 @@ Broadcast.CreateStream = {
   service: Broadcast,
   requestStream: false,
   responseStream: true,
-  requestType: broadcast_pb.Connect,
+  requestType: broadcast_pb.User,
   responseType: broadcast_pb.Message
 };
 

@@ -2,14 +2,14 @@
 // file: broadcast.proto
 
 import * as broadcast_pb from "./broadcast_pb";
-import { grpc } from "@improbable-eng/grpc-web";
+import {grpc} from "@improbable-eng/grpc-web";
 
 type BroadcastCreateStream = {
   readonly methodName: string;
   readonly service: typeof Broadcast;
   readonly requestStream: false;
   readonly responseStream: true;
-  readonly requestType: typeof broadcast_pb.Connect;
+  readonly requestType: typeof broadcast_pb.User;
   readonly responseType: typeof broadcast_pb.Message;
 };
 
@@ -60,15 +60,15 @@ export class BroadcastClient {
   readonly serviceHost: string;
 
   constructor(serviceHost: string, options?: grpc.RpcOptions);
-  createStream(requestMessage: broadcast_pb.Connect, metadata?: grpc.Metadata): ResponseStream<broadcast_pb.Message>;
+  createStream(requestMessage: broadcast_pb.User, metadata?: grpc.Metadata): ResponseStream<broadcast_pb.Message>;
   broadcastMessage(
     requestMessage: broadcast_pb.Message,
     metadata: grpc.Metadata,
-    callback: (error: ServiceError | null, responseMessage: broadcast_pb.Close | null) => void
+    callback: (error: ServiceError|null, responseMessage: broadcast_pb.Close|null) => void
   ): UnaryResponse;
   broadcastMessage(
     requestMessage: broadcast_pb.Message,
-    callback: (error: ServiceError | null, responseMessage: broadcast_pb.Close | null) => void
+    callback: (error: ServiceError|null, responseMessage: broadcast_pb.Close|null) => void
   ): UnaryResponse;
 }
 
