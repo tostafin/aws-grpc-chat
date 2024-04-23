@@ -41,16 +41,23 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
 ### Configuration set-up
 1. Build and push the gRPC server Docker image to Amazon ECR (replace <AWS_ACCOUNT_ID> with your AWS account ID):
     ```
-    aws ecr create-repository --repository-name helloworld-grpc
+    aws ecr create-repository --repository-name aws-grpc-server
     ```
     ```
-    docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/helloworld-grpc:1.0 .
+    cd app/server
+    ```
+    ```
+    cp -R ../proto . && docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0 . && rm -R proto/
     ```
     ```
     aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
     ```
     ```
-    docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/helloworld-grpc:1.0
+    docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
+    ```
+
+    ```
+    cd ../..
     ```
 
 2. Deploy the [domain CloudFormation stack](./aws/domain-cfn-template.yaml):
@@ -63,11 +70,8 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
         --region us-east-1 \
         --profile default
         ```
-    3. **During** the deployment add a CNAME record to the Route 53 hosted zone:
-        1. Go to the Certificate Manager service, then to *List certificates* and select your certificate.
-        2. Copy the CNAME key and value.
-        3. Go to the Route 53 service, then to *Hosted zones* and click on *Create record*.
-        4. Paste the CNAME key into *Record name*, paste the CNAME value into *Value* and switch the *Record type* to *CNAME - ...*
+    3. **During** the deployment add a CNAME record to your domain DNS configuration
+        
 
 3. Deploy the [infra CloudFormation stack](./aws/infra-cfn-template.yaml) (network, EKS cluster and node group):
     ```
@@ -103,9 +107,7 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
     kubectl apply -f ./aws/kubernetes/grpc.yaml
     ```
 
-7. Configure Route 53:
-    - Update the /etc/hosts file by appending the IP address of the Application Load Balancer.
-    - Alternatively, add an A record with the domain name linked to the Load Balancer DNS name.
+7. Update the /etc/hosts file by appending the IP address of the Application Load Balancer.
 
 ### Data preparation
 Mock files with sample comments will be used to simulate huge traffic loads. Additionally, real clients will be able to write to the chat and their messages will be displayed in real time to others.
