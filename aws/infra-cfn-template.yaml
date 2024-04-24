@@ -287,10 +287,10 @@ Resources:
       NodeRole: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       ScalingConfig:
         MinSize: 1
-        DesiredSize: 3
-        MaxSize: 4
+        DesiredSize: 4
+        MaxSize: 5
       Subnets:
         - !Ref PrivateSubnet01
         - !Ref PrivateSubnet02
       InstanceTypes:
-        - t2.micro
+        - t2.medium

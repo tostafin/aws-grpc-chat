@@ -6,10 +6,9 @@ import { Button, ChakraProvider, Flex, Input, Text } from '@chakra-ui/react'
 import { Message, User } from './generated/broadcast_pb';
 
 import { v4 as uuidv4 } from 'uuid';
-
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 
-const client = new BroadcastClient("http://localhost:8080");
+const client = new BroadcastClient("https://backend.mnessel.pl");
 const userId = uuidv4()
 
 function App() {

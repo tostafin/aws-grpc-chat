@@ -39,25 +39,34 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
 
 ## Demo deployment steps
 ### Configuration set-up
-1. Build and push the gRPC server Docker image to Amazon ECR (replace <AWS_ACCOUNT_ID> with your AWS account ID):
+1. Build and push the Docker images to Amazon ECR (replace <AWS_ACCOUNT_ID> with your AWS account ID):
+* First, authenticate Docker with the Amazon ECR registry:
+    ```
+    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+    ```
+* GRPC server:
     ```
     aws ecr create-repository --repository-name aws-grpc-server
     ```
     ```
-    cd app/server
-    ```
-    ```
-    cp -R ../proto . && docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0 . && rm -R proto/
-    ```
-    ```
-    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+    cp -R app/proto app/server && docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0 app/server && rm -R app/server/proto/
     ```
     ```
     docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
     ```
 
+* GRPC client:
     ```
-    cd ../..
+    aws ecr create-repository --repository-name aws-grpc-client
+    ```
+    ```
+    docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0 app/frontend
+    ```
+    ```
+    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+    ```
+    ```
+    docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0
     ```
 
 2. Deploy the [domain CloudFormation stack](./aws/domain-cfn-template.yaml):
@@ -71,7 +80,6 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
         --profile default
         ```
     3. **During** the deployment add a CNAME record to your domain DNS configuration
-        
 
 3. Deploy the [infra CloudFormation stack](./aws/infra-cfn-template.yaml) (network, EKS cluster and node group):
     ```

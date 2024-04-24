@@ -1,26 +1,25 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: grpcserver
+  name: grpc
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grpcserver
-  namespace: grpcserver
+  name: grpc-server
+  namespace: grpc
 spec:
   selector:
     matchLabels:
-      app: grpcserver
-  replicas: 2
+      app: grpc-server
+  replicas: 1
   template:
     metadata:
       labels:
-        app: grpcserver
+        app: grpc-server
     spec:
       containers:
-      - name: grpc-demo
-        # Update image before apply
+      - name: grpc-server
         image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
         imagePullPolicy: Always
         ports:
@@ -36,17 +35,53 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: grpcserver
-  namespace: grpcserver
+  name: grpc-server
+  namespace: grpc
 spec:
-  # bypass kube-proxy
   ports:
   - port: 9000
     protocol: TCP
     targetPort: 9000
   clusterIP: None
   selector:
-    app: grpcserver
+    app: grpc-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-client
+  namespace: grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-client
+  template:
+    metadata:
+      labels:
+        app: grpc-client
+    spec:
+      containers:
+        - name: grpc-client
+          imagePullPolicy: Always
+          image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0
+          ports:
+            - containerPort: 3000
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-client
+  namespace: grpc
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  clusterIP: None
+  selector:
+    app: grpc-client
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -57,23 +92,42 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-  labels:
-    app: grpcserver
-    environment: dev
-  name: grpcserver
-  namespace: grpcserver
+  name: grpc-ingress-server
+  namespace: grpc
 spec:
   ingressClassName: alb
   rules:
-    # Update domain name before apply
-    - host: "mnessel.pl"
+    - host: "backend.mnessel.pl"
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: grpcserver
+                name: grpc-server
                 port:
                   number: 9000
-
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+  name: grpc-ingress-front
+  namespace: grpc
+spec:
+  ingressClassName: alb
+  rules:
+    - host: "app.mnessel.pl"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grpc-client
+                port:
+                  number: 3000
