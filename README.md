@@ -121,7 +121,8 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
 Mock files with sample comments will be used to simulate huge traffic loads. Additionally, real clients will be able to write to the chat and their messages will be displayed in real time to others.
 
 ### Execution procedure
-Run the [client](./app/helloworld_client_ssl.py) to connect to the server and receive responses.
+Run the Postman to connect to the server and receive responses
+<!-- Run the [client](./app/helloworld_client_ssl.py) to connect to the server and receive responses. -->
 
 ### Results presentation
 
