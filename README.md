@@ -39,20 +39,20 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
 
 ## Demo deployment steps
 ### Configuration set-up
-1. Build and push the Docker images to Amazon ECR (replace <AWS_ACCOUNT_ID> with your AWS account ID):
+1. Build and push the Docker images to Amazon ECR (replace 339712967953 with your AWS account ID):
 * First, authenticate Docker with the Amazon ECR registry:
     ```
-    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin 339712967953.dkr.ecr.us-east-1.amazonaws.com
     ```
 * GRPC server:
     ```
     aws ecr create-repository --repository-name aws-grpc-server
     ```
     ```
-    cp -R app/proto app/server && docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0 app/server && rm -R app/server/proto/
+    cp -R app/proto app/server && docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0 app/server && rm -R app/server/proto/
     ```
     ```
-    docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
+    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0
     ```
 
 * GRPC client:
@@ -60,13 +60,21 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
     aws ecr create-repository --repository-name aws-grpc-client
     ```
     ```
-    docker build -t <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0 app/frontend
+    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:20.0 app/client
     ```
     ```
-    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:20.0
+    ```
+
+* GRPC client envoy:
+    ```
+    aws ecr create-repository --repository-name aws-grpc-client-envoy
     ```
     ```
-    docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0
+    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:21.0 app/envoy
+    ```
+    ```
+    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:21.0
     ```
 
 2. Deploy the [domain CloudFormation stack](./aws/domain-cfn-template.yaml):

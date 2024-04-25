@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: grpc-server
-        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
+        image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0
         imagePullPolicy: Always
         ports:
         - name: grpc-api
@@ -64,7 +64,7 @@ spec:
       containers:
         - name: grpc-client
           imagePullPolicy: Always
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0
+          image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:20.0
           ports:
             - containerPort: 3000
       restartPolicy: Always
@@ -83,6 +83,64 @@ spec:
   selector:
     app: grpc-client
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-proxy
+  namespace: grpc
+#  annotations:
+#    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+#    external-dns.alpha.kubernetes.io/hostname: mnessel.pl
+  labels:
+    k8s-app: grpc-proxy-app
+spec:
+#  sessionAffinity: None
+#  type: LoadBalancer
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: envoy-admin
+      port: 8081
+      targetPort: envoy-admin
+      protocol: TCP
+  selector:
+    k8s-app: grpc-proxy-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-proxy-app
+  labels:
+    k8s-app: grpc-proxy-app
+  namespace: grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: grpc-proxy-app
+  template:
+    metadata:
+      labels:
+        k8s-app: grpc-proxy-app
+    spec:
+      containers:
+        - name: envoy-proxy
+          image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:21.0
+          env:
+            - name: LISTEN_PORT
+              value: "8080"
+            - name: SERVICE_DISCOVERY_ADDRESS
+              value: grpc-server
+            - name: SERVICE_DISCOVERY_PORT
+              value: "9000"
+          ports:
+            - containerPort: 8080
+              name: http
+            - name: envoy-admin
+              containerPort: 8081
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -92,7 +150,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-  name: grpc-ingress-server
+  name: grpc-ingress-proxy
   namespace: grpc
 spec:
   ingressClassName: alb
@@ -104,9 +162,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: grpc-server
+                name: grpc-proxy
                 port:
-                  number: 9000
+                  number: 8080
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -116,7 +174,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-  name: grpc-ingress-front
+  name: grpc-ingress
   namespace: grpc
 spec:
   ingressClassName: alb
