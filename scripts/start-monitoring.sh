@@ -3,6 +3,9 @@ exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 
 echo "Starting Monitoring..."
+echo "To login to Grafana, use the following credentials:"
+echo "Username: admin"
+echo "Password: admin"
 while true; do
   if kubectl get pods -n monitoring | grep ^prometheus-grafana | grep Running; then
     break
