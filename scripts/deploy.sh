@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 
@@ -14,18 +15,18 @@ export DOMAIN_NAME="mnessel.pl"
 aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 
 echo "Building and Pushing GRPC Server to ECR..."
-aws ecr create-repository --repository-name aws-grpc-server
-cp -R app/proto app/server && docker build -t ${GRPC_SERVER_IMAGE} app/server && rm -R app/server/proto/
+aws ecr create-repository --repository-name aws-grpc-server || echo "Repository aws-grpc-server already exists"
+cp -R app/proto app/server && docker build --platform linux/amd64 -t ${GRPC_SERVER_IMAGE} app/server && rm -R app/server/proto/
 docker push ${GRPC_SERVER_IMAGE}
 
 echo "Building and Pushing GRPC Client to ECR..."
-aws ecr create-repository --repository-name aws-grpc-client
-docker build -t ${GRPC_CLIENT_IMAGE} app/client
+aws ecr create-repository --repository-name aws-grpc-client || echo "Repository aws-grpc-client already exists"
+docker build --platform linux/amd64 -t ${GRPC_CLIENT_IMAGE} app/client
 docker push ${GRPC_CLIENT_IMAGE}
 
 echo "Building and Pushing Envoy Proxy to ECR..."
-aws ecr create-repository --repository-name aws-grpc-client-envoy
-docker build -t ${GRPC_ENVOY_IMAGE} app/envoy
+aws ecr create-repository --repository-name aws-grpc-client-envoy || echo "Repository aws-grpc-client-envoy already exists"
+docker build --platform linux/amd64 -t ${GRPC_ENVOY_IMAGE} app/envoy
 docker push ${GRPC_ENVOY_IMAGE}
 
 
@@ -46,7 +47,7 @@ aws cloudformation deploy --template-file ./aws/infra-cfn-template.yaml \
 --profile default
 
 
-# --- KUBERNETES LB ---
+ --- KUBERNETES LB ---
 echo "Updating Kubeconfig..."
 aws eks update-kubeconfig --region us-east-1 --name suu-eks-cluster
 
@@ -60,7 +61,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
     --set serviceAccount.name=aws-load-balancer-controller
 
 while true; do
-  if kubectl -n kube-system get pods -l app.kubernetes.io/name=aws-load-balancer-controller; then
+  if kubectl -n kube-system get pods -l app.kubernetes.io/name=aws-load-balancer-controller | grep -q "1/1"; then
     break
   fi
   echo "Waiting for load-balancer pod to be ready..."
@@ -69,7 +70,8 @@ done
 
 # --- KUBERNETES MANIFEST ---
 echo "Deploying EKS manifests..."
-#kubectl apply -f ./aws/kubernetes/grpc.yaml # Without environment variables
+# kubectl apply -f ./aws/kubernetes/grpc.yaml # Apply without environment variables
+# kubectl delete -f ./aws/kubernetes/grpc.yaml # Delete
 envsubst < ./aws/kubernetes/grpc.yaml | kubectl apply -f - # With environment variables
 
 
@@ -79,6 +81,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 kubectl create namespace monitoring
 
+echo "Installing prometheus..."
 helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set grafana.adminPassword=admin
 
 echo "Done!"

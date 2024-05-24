@@ -288,9 +288,10 @@ Resources:
       ScalingConfig:
         MinSize: 1
         DesiredSize: 4
-        MaxSize: 5
+        MaxSize: 6
       Subnets:
         - !Ref PrivateSubnet01
         - !Ref PrivateSubnet02
       InstanceTypes:
-        - t2.medium
+        - t3.small
+
