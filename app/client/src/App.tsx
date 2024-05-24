@@ -8,7 +8,7 @@ import { Message, User } from './generated/broadcast_pb';
 import { v4 as uuidv4 } from 'uuid';
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 
-const client = new BroadcastClient("https://backend.mnessel.pl");
+const client = new BroadcastClient("https://mnessel.pl");
 const userId = uuidv4()
 
 function App() {

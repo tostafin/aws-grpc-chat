@@ -60,10 +60,10 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
     aws ecr create-repository --repository-name aws-grpc-client
     ```
     ```
-    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:20.0 app/client
+    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:21 app/client
     ```
     ```
-    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:20.0
+    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:21
     ```
 
 * GRPC client envoy:
@@ -71,10 +71,10 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
     aws ecr create-repository --repository-name aws-grpc-client-envoy
     ```
     ```
-    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:21.0 app/envoy
+    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:20.0 app/envoy
     ```
     ```
-    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:21.0
+    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:20.0
     ```
 
 2. Deploy the [domain CloudFormation stack](./aws/domain-cfn-template.yaml):
@@ -124,6 +124,23 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
     ```
 
 7. Update the /etc/hosts file by appending the IP address of the Application Load Balancer.
+
+8. Monitoring - Prometheus and Grafana:
+    ```
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo add grafana https://grafana.github.io/helm-charts
+    
+    kubectl create namespace monitoring
+    
+    helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring
+   
+    kubectl get pods --show-labels --namespace monitoring 
+   
+    kubectl --namespace monitoring port-forward prometheus-prometheus-kube-prometheus-prometheus-0 9090
+    kubectl --namespace monitoring port-forward prometheus-grafana-d5679d5d7-4wp8c 9090
+
+    ```
+
 
 ### Data preparation
 Mock files with sample comments will be used to simulate huge traffic loads. Additionally, real clients will be able to write to the chat and their messages will be displayed in real time to others.

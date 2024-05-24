@@ -1,8 +1,8 @@
-FROM envoyproxy/envoy:v1.14.1
+FROM envoyproxy/envoy:v1.22.5
 
 
 COPY start-envoy.sh /start-envoy.sh
-COPY envoy.yml /tmpl/envoy.yml
+COPY envoy.yaml /tmpl/envoy.yaml
 
 RUN chmod +x /start-envoy.sh
 RUN apt-get update && \
