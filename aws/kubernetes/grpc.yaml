@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: grpc-server
-        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:1.0
+        image: $GRPC_SERVER_IMAGE
         imagePullPolicy: Always
         ports:
         - name: grpc-api
@@ -30,6 +30,11 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+      - name: envoy-proxy
+        image: $GRPC_ENVOY_IMAGE
+        ports:
+          - containerPort: 8080
+            name: http
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -42,6 +47,11 @@ spec:
   - port: 9000
     protocol: TCP
     targetPort: 9000
+    name: grpc-api
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+    name: envoy-port
   clusterIP: None
   selector:
     app: grpc-server
@@ -64,7 +74,7 @@ spec:
       containers:
         - name: grpc-client
           imagePullPolicy: Always
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:1.0
+          image: $GRPC_CLIENT_IMAGE
           ports:
             - containerPort: 3000
       restartPolicy: Always
@@ -88,46 +98,28 @@ kind: Ingress
 metadata:
   annotations:
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/backend-protocol-version: "GRPC"
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-  name: grpc-ingress-server
+  name: grpc-ingress-proxy
   namespace: grpc
 spec:
   ingressClassName: alb
   rules:
-    - host: "backend.mnessel.pl"
+    - host: "$DOMAIN_NAME"
       http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: grpc-server
-                port:
-                  number: 9000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-  name: grpc-ingress-front
-  namespace: grpc
-spec:
-  ingressClassName: alb
-  rules:
-    - host: "app.mnessel.pl"
-      http:
-        paths:
-          - path: /
+          - path: /app
             pathType: Prefix
             backend:
               service:
                 name: grpc-client
                 port:
                   number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grpc-server
+                port:
+                  number: 8080
