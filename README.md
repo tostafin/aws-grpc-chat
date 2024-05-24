@@ -39,108 +39,16 @@ AWS Cloudformation templates are used to deploy this application. They can be fo
 
 ## Demo deployment steps
 ### Configuration set-up
-1. Build and push the Docker images to Amazon ECR (replace 339712967953 with your AWS account ID):
-* First, authenticate Docker with the Amazon ECR registry:
-    ```
-    aws ecr get-login-password --region us-east-1 --no-cli-auto-prompt | docker login --username AWS --password-stdin 339712967953.dkr.ecr.us-east-1.amazonaws.com
-    ```
-* GRPC server:
-    ```
-    aws ecr create-repository --repository-name aws-grpc-server
-    ```
-    ```
-    cp -R app/proto app/server && docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0 app/server && rm -R app/server/proto/
-    ```
-    ```
-    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0
-    ```
+Run the following script to deploy services on AWS:
+```bash
+scripts/deploy.sh
+```
+If necessary update the /etc/hosts file by appending the IP address of the Application Load Balancer.
 
-* GRPC client:
-    ```
-    aws ecr create-repository --repository-name aws-grpc-client
-    ```
-    ```
-    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:21 app/client
-    ```
-    ```
-    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:21
-    ```
-
-* GRPC client envoy:
-    ```
-    aws ecr create-repository --repository-name aws-grpc-client-envoy
-    ```
-    ```
-    docker build -t 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:20.0 app/envoy
-    ```
-    ```
-    docker push 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:20.0
-    ```
-
-2. Deploy the [domain CloudFormation stack](./aws/domain-cfn-template.yaml):
-    1. Update the `DomainName` parameter with the desired domain name.
-    2. Run the following to start the deployment:
-        ```
-        aws cloudformation deploy --template-file ./aws/domain-cfn-template.yaml \
-        --stack-name suu-domain \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --region us-east-1 \
-        --profile default
-        ```
-    3. **During** the deployment add a CNAME record to your domain DNS configuration
-
-3. Deploy the [infra CloudFormation stack](./aws/infra-cfn-template.yaml) (network, EKS cluster and node group):
-    ```
-    aws cloudformation deploy --template-file ./aws/infra-cfn-template.yaml \
-    --stack-name suu-infra \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region us-east-1 \
-    --profile default
-    ```
-
-4. Update the kubeconfig:
-    ```
-    aws eks update-kubeconfig --region us-east-1 --name suu-eks-cluster
-    ```
-
-5. Install the AWS Load Balancer Controller:
-    ```
-    helm repo add eks https://aws.github.io/eks-charts
-    ```
-    ```
-    helm repo update eks
-    ```
-    ```
-    helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-    -n kube-system \
-    --set clusterName=suu-eks-cluster \
-    --set serviceAccount.create=true \
-    --set serviceAccount.name=aws-load-balancer-controller 
-    ```
-
-6. Update the [manifest file](./aws/kubernetes/grpc.yaml) with the correct ECR image URL and domain name. Then apply it:
-    ```
-    kubectl apply -f ./aws/kubernetes/grpc.yaml
-    ```
-
-7. Update the /etc/hosts file by appending the IP address of the Application Load Balancer.
-
-8. Monitoring - Prometheus and Grafana:
-    ```
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    helm repo add grafana https://grafana.github.io/helm-charts
-    
-    kubectl create namespace monitoring
-    
-    helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring
-   
-    kubectl get pods --show-labels --namespace monitoring 
-   
-    kubectl --namespace monitoring port-forward prometheus-prometheus-kube-prometheus-prometheus-0 9090
-    kubectl --namespace monitoring port-forward prometheus-grafana-d5679d5d7-4wp8c 9090
-
-    ```
-
+To start EKS cluster monitoring run:
+```bash
+scripts/start-monitoring.sh
+```
 
 ### Data preparation
 Mock files with sample comments will be used to simulate huge traffic loads. Additionally, real clients will be able to write to the chat and their messages will be displayed in real time to others.

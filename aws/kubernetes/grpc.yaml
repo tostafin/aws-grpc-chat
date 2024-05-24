@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: grpc-server
-        image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-server:20.0
+        image: $GRPC_SERVER_IMAGE
         imagePullPolicy: Always
         ports:
         - name: grpc-api
@@ -31,7 +31,7 @@ spec:
             fieldRef:
               fieldPath: status.podIP
       - name: envoy-proxy
-        image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client-envoy:20.0
+        image: $GRPC_ENVOY_IMAGE
         ports:
           - containerPort: 8080
             name: http
@@ -74,7 +74,7 @@ spec:
       containers:
         - name: grpc-client
           imagePullPolicy: Always
-          image: 339712967953.dkr.ecr.us-east-1.amazonaws.com/aws-grpc-client:21
+          image: $GRPC_CLIENT_IMAGE
           ports:
             - containerPort: 3000
       restartPolicy: Always
@@ -106,7 +106,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: "mnessel.pl"
+    - host: "$DOMAIN_NAME"
       http:
         paths:
           - path: /app
