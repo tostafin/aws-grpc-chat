@@ -20,9 +20,19 @@ function App() {
   const onBroadcastMessage = async () => {
     const message = new Message()
     message.setUserId(userId)
-    message.setContent('New message')
+    message.setContent(comment)
     message.setTimestamp(google_protobuf_timestamp_pb.Timestamp.fromDate(new Date()),)
     client.broadcastMessage(message, () => { })
+  }
+
+  const onMultipleBroadcastMessage = async () => {
+    const message = new Message()
+    message.setUserId(userId)
+    message.setContent(comment)
+    message.setTimestamp(google_protobuf_timestamp_pb.Timestamp.fromDate(new Date()),)
+    for (let i = 0; i < 10000; i++) {
+      client.broadcastMessage(message, () => { })
+    }
   }
 
   useEffect(() => {
@@ -41,6 +51,7 @@ function App() {
         <Flex w="100%" flexDir="column" gap="1rem">
           <Input value={comment} onChange={onCommentChange} placeholder="Your message..." />
           <Button alignSelf='flex-start' onClick={onBroadcastMessage}>Send message</Button>
+          <Button alignSelf='flex-start' onClick={onMultipleBroadcastMessage}>Send 10000 messages</Button>
           <Text>General chat</Text>
           {messages.map((message, index) => (
             <Flex key={message.getUserId() + index}>

@@ -47,7 +47,7 @@ aws cloudformation deploy --template-file ./aws/infra-cfn-template.yaml \
 --profile default
 
 
- --- KUBERNETES LB ---
+# --- KUBERNETES LB ---
 echo "Updating Kubeconfig..."
 aws eks update-kubeconfig --region us-east-1 --name suu-eks-cluster
 
@@ -68,6 +68,13 @@ while true; do
   sleep 5
 done
 
+
+# --- KUBERNETES METRICS ---
+echo "Installing Metrics Server..."
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm upgrade --install metrics-server metrics-server/metrics-server
+
+
 # --- KUBERNETES MANIFEST ---
 echo "Deploying EKS manifests..."
 # kubectl apply -f ./aws/kubernetes/grpc.yaml # Apply without environment variables
@@ -77,7 +84,7 @@ envsubst < ./aws/kubernetes/grpc.yaml | kubectl apply -f - # With environment va
 
 # --- KUBERNETES MONITORING ---
 echo "Deploying Monitoring..."
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-co mmunity.github.io/helm-charts
 
 kubectl create namespace monitoring
 

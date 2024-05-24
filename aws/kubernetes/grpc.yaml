@@ -30,11 +30,21 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "200m"
       - name: envoy-proxy
         image: $GRPC_ENVOY_IMAGE
         ports:
           - containerPort: 8080
             name: http
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "200m"
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -90,7 +100,7 @@ spec:
     kind: Deployment
     name: grpc-server
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
