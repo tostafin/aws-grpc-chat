@@ -76,3 +76,4 @@ export DOMAIN_NAME="mnessel.pl"
 
 echo "Done!"
 echo "You can access the application at https://${DOMAIN_NAME}/app"
+echo "To show monitoring dashboard run: scripts/start-monitoring.sh script. User: admin, Password: admin"

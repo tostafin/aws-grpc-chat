@@ -49,6 +49,9 @@ To start EKS cluster monitoring run:
 ```bash
 scripts/start-monitoring.sh
 ```
+Use following credentials to log in:
+- Username: admin
+- Password: admin
 
 ### Data preparation
 Mock files with sample comments will be used to simulate huge traffic loads. Additionally, real clients will be able to write to the chat and their messages will be displayed in real time to others.
