@@ -1,4 +1,4 @@
-#!/bin/bash
+# #!/bin/bash
 set -e
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
@@ -32,6 +32,7 @@ docker push ${GRPC_ENVOY_IMAGE}
 
 # --- AWS CLOUDFORMATION ---
 echo "Deploying Domain CloudFormation Stack..."
+echo "NOTE: Add the CNAME to the DNS from the AWS Certificate Manager"
 aws cloudformation deploy --template-file ./aws/domain-cfn-template.yaml \
 --stack-name suu-domain \
 --capabilities CAPABILITY_NAMED_IAM \
@@ -84,7 +85,7 @@ envsubst < ./aws/kubernetes/grpc.yaml | kubectl apply -f - # With environment va
 
 # --- KUBERNETES MONITORING ---
 echo "Deploying Monitoring..."
-helm repo add prometheus-community https://prometheus-co mmunity.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
 kubectl create namespace monitoring
 
@@ -93,7 +94,7 @@ helm install prometheus prometheus-community/kube-prometheus-stack --namespace m
 
 echo "Done!"
 
-lb_dns_name=$(aws elbv2 describe-load-balancers | grep 'k8s-grpc' | grep 'DNSName' | awk '{print $4}')
+lb_dns_name=$(aws elbv2 describe-load-balancers --output table | grep 'k8s-grpc' | grep 'DNSName' | awk '{print $4}')
 printf "\nBefore accessing the application, add load balancer CNAME record to your domain DNS settings:\n"
 printf "  Name: ${DOMAIN_NAME} \n  Value: ${lb_dns_name}\n\n"
 

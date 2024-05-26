@@ -40,6 +40,8 @@ spec:
         ports:
           - containerPort: 8080
             name: http
+          - containerPort: 9901
+            name: logs
         resources:
           requests:
             cpu: "100m"
