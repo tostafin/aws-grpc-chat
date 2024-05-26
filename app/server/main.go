@@ -26,7 +26,6 @@ type connection struct {
 }
 
 type broadcastServer struct {
-	logger *log.Logger
 	pb.UnimplementedBroadcastServer
 	connections []*connection
 }
@@ -46,6 +45,13 @@ func (p *broadcastServer) CreateStream(user *pb.User, stream pb.Broadcast_Create
 
 	p.connections = append(p.connections, conn)
 	log.Println("new stream created for user:", conn.id) // Log when a new stream is created
+
+	go func() {
+		<-stream.Context().Done()
+		log.Println("client closed connection:", conn.id)
+		conn.active = false
+		conn.error <- fmt.Errorf("stream context done")
+	}()
 
 	return <-conn.error
 }
