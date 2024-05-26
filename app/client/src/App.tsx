@@ -103,7 +103,7 @@ function App() {
         <ChakraProvider>
             <Flex maxW="40rem" m="0 auto" mt="5rem">
                 <Flex w="100%" flexDir="column" gap="1rem">
-                    <Text>Message Generator</Text>
+                    <Text fontSize="xl" style={{marginTop: "10px"}} fontWeight="bold" >Message Generator</Text>
                     <Flex align="center" justify="space-between">
                         <Slider
                             aria-label="Number of messages"
@@ -112,7 +112,7 @@ function App() {
                             max={100000}
                             step={100}
                             onChange={onNumMessagesChange}
-                            w="70%"
+                            w="75%"
                         >
                             <SliderTrack>
                                 <SliderFilledTrack/>
@@ -129,7 +129,7 @@ function App() {
                             max={5000}
                             step={100}
                             onChange={onBachSizeChange}
-                            w="70%"
+                            w="75%"
                         >
                             <SliderTrack>
                                 <SliderFilledTrack/>
@@ -147,13 +147,12 @@ function App() {
                     <Divider my="0.5rem"/>
                     {ytId && (
                         <iframe
-                            width="820"
-                            height="415"
+                            width="100%"
+                            height="360"
                             src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1`}
                             allowFullScreen
                         />
                     )}
-
                     <Flex align="center">
                         <Avatar size="sm" name={userId}/>
                         <Text fontWeight="bold" ml="0.5rem">
@@ -165,7 +164,7 @@ function App() {
                         Send message
                     </Button>
 
-                    <Text>General chat</Text>
+                    <Text fontSize="xl" style={{marginTop: "10px", margin: "0 auto"}} fontWeight="bold" >General chat</Text>
                     {messages.map((message, index) => (
                         <Flex key={message.getUserId() + index} flexDir="column" w="100%">
                             <Flex align="center">
