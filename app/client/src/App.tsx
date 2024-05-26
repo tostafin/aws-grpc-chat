@@ -20,7 +20,6 @@ import {generateRandomMessage, generateUID} from './chatMessages';
 
 const client = new BroadcastClient('https://mnessel.pl');
 const userId = generateUID();
-const MESSAGE_STEP = 100;
 
 function App() {
     const [comment, setComment] = useState('');
@@ -28,6 +27,7 @@ function App() {
     const [progress, setProgress] = useState(0);
     const [isSending, setIsSending] = useState(false);
     const [numMessages, setNumMessages] = useState(10000);
+    const [batchSize, setBatchSize] = useState(100);
     const [ytId, setYtId] = useState<string | null>(null); // State to store YouTube video ID
 
     const onCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => setComment(e.target.value);
@@ -45,7 +45,6 @@ function App() {
         setIsSending(true);
         setProgress(0);
         const totalMessages = numMessages;
-        const batchSize = MESSAGE_STEP;
         for (let i = 0; i < totalMessages; i += batchSize) {
             const batch = Array.from({length: batchSize}, (_, index) => i + index).filter(index => index < totalMessages);
             await Promise.all(
@@ -82,7 +81,7 @@ function App() {
         return () => {
             streamer.cancel();
         };
-    }, [userId]); // Add userId as a dependency
+    }, []);
 
 
     useEffect(() => {
@@ -95,6 +94,9 @@ function App() {
 
     const onNumMessagesChange = (value: number) => {
         setNumMessages(value);
+    };
+    const onBachSizeChange = (value: number) => {
+        setBatchSize(value);
     };
 
     return (
@@ -118,6 +120,23 @@ function App() {
                             <SliderThumb/>
                         </Slider>
                         <Text>{numMessages} messages</Text>
+                    </Flex>
+                    <Flex align="center" justify="space-between">
+                        <Slider
+                            aria-label="Bach size"
+                            defaultValue={batchSize}
+                            min={100}
+                            max={5000}
+                            step={100}
+                            onChange={onBachSizeChange}
+                            w="70%"
+                        >
+                            <SliderTrack>
+                                <SliderFilledTrack/>
+                            </SliderTrack>
+                            <SliderThumb/>
+                        </Slider>
+                        <Text>{batchSize} per batch</Text>
                     </Flex>
                     {isSending && <Progress value={(progress / numMessages) * 100} size="sm" colorScheme="green"/>}
 
