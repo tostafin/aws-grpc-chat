@@ -26,10 +26,12 @@ Clients enter a web page on which a chat is present. They automatically connect 
 ## Solution architecture
 
 ![aws architecture](./docs/aws-architecture.png "AWS Architecture")
-*Img. 1 AWS Architecture with EKS*
+
+*Img. 1: AWS Architecture with EKS*
 
 ![server architecture](./docs/server-redis-architecture.png "Server Architecture")
-*Img. 2 Server architecture with Redis*
+
+*Img. 2: Server architecture with Redis*
 
 [Source](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer.html#deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer-architecture)
 
@@ -72,23 +74,22 @@ You can add a `?ytid=` query param concatenated with a YouTube video/live ID to 
 ### Results presentation
 
 ![webpage](./docs/webpage.png "webpage")
-*Img. 3 View of an application*
+
+*Img. 3: View of the application*
 
 ![grafana1](./docs/grafana1.png "grafana1")
-*Img. 4 *
+*Img. 4: Before scaling up*
 ![grafana2](./docs/grafana2.png "grafana2")
-*Img. 5 *
+*Img. 5: After initial load*
 ![grafana3](./docs/grafana3.png "grafana3")
-*Img. 6 *
+*Img. 6: Initial scaling up: 2 additional pods*
 ![grafana4](./docs/grafana4.png "grafana4")
-*Img. 7 *
+*Img. 7: End of load*
 ![grafana5](./docs/grafana5.png "grafana5")
-*Img. 8 *
-![grafana6](./docs/grafana6.png "grafana6")
-*Img. 9 *
+*Img. 8: After scaling down: only one initial pod left*
 
 ![k9s](./docs/k9s.png "k9s")
-*Img. 10 *
+*Img. 9: K9s HPA logs*
 
 ## Summary &mdash; conclusions
 The project showed us how to use gRPC in a distributed environment like the AWS Cloud. This allowed us to use load balancing to scale pods horizontally.
