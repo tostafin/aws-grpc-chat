@@ -159,14 +159,16 @@ func main() {
 	flag.Parse()
 
 	redisReadHost := getEnv("REDIS_READ_HOST", "localhost")
+	redisReadPort := getEnv("REDIS_READ_PORT", "6379")
 	redisClient = redis.NewClient(&redis.Options{
-		Addr: redisReadHost + ":6379",
+		Addr: redisReadHost + ":" + redisReadPort,
 		DB:   0,
 	})
 
 	redisWriteHost := getEnv("REDIS_WRITE_HOST", "localhost")
+	redisWritePort := getEnv("REDIS_WRITE_PORT", "6379")
 	redisWriteClient = redis.NewClient(&redis.Options{
-		Addr: redisWriteHost + ":6379",
+		Addr: redisWriteHost + ":" + redisWritePort,
 		DB:   0,
 	})
 

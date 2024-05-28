@@ -18,7 +18,7 @@ import {Message, User} from './generated/broadcast_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import {generateRandomMessage, generateUID} from './chatMessages';
 
-const client = new BroadcastClient('https://mnessel.pl');
+const client = new BroadcastClient(process.env.REACT_APP_ENVOY_URL as string);
 const userId = generateUID();
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
     const [isSending, setIsSending] = useState(false);
     const [numMessages, setNumMessages] = useState(10000);
     const [batchSize, setBatchSize] = useState(100);
-    const [ytId, setYtId] = useState<string>("");
+    const [ytId, setYtId] = useState<string>("default");
 
     const onCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => setComment(e.target.value);
 
@@ -50,8 +50,7 @@ function App() {
             const batch = Array.from({length: batchSize}, (_, index) => i + index).filter(index => index < totalMessages);
             await Promise.all(
                 batch.map(() => {
-                    let message = generateRandomMessage();
-                    message.setChatId(ytId);
+                    let message = generateRandomMessage(ytId);
                     return new Promise<void>((resolve) => {
                         client.broadcastMessage(message, () => {
                             setProgress(prevProgress => prevProgress + 1);
@@ -85,7 +84,7 @@ function App() {
         return () => {
             streamer.cancel();
         };
-    }, [ytId]);
+    }, []);
 
 
     useEffect(() => {
@@ -149,7 +148,7 @@ function App() {
                     </Button>
 
                     <Divider my="0.5rem"/>
-                    {!!ytId && (
+                    {ytId != "default" && (
                         <iframe
                             width="100%"
                             height="360"

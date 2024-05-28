@@ -53,7 +53,7 @@ echo "Updating Kubeconfig..."
 aws eks update-kubeconfig --region us-east-1 --name suu-eks-cluster
 
 echo "Installing the AWS Load Balancer Controller..."
-helm repo add eks https://aws.github.io/eks-charts
+helm repo add --force-update eks https://aws.github.io/eks-charts
 helm repo update eks
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
     -n kube-system \
@@ -72,7 +72,7 @@ done
 
 # --- KUBERNETES METRICS ---
 echo "Installing Metrics Server..."
-helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm repo add --force-update metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm upgrade --install metrics-server metrics-server/metrics-server
 
 
@@ -85,7 +85,7 @@ envsubst < ./aws/kubernetes/grpc.yaml | kubectl apply -f - # With environment va
 
 # --- KUBERNETES MONITORING ---
 echo "Deploying Monitoring..."
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add --force-update prometheus-community https://prometheus-community.github.io/helm-charts
 
 kubectl create namespace monitoring
 

@@ -116,7 +116,7 @@ export function generateUID() {
     return (firstPart + secondPart).toString();
 }
 
-export function generateRandomMessage() {
+export function generateRandomMessage(chatId) {
     const userId = generateUID();
     const message = new Message();
     const randomIndex = Math.floor(Math.random() * chatMessages.length);
@@ -124,6 +124,7 @@ export function generateRandomMessage() {
 
     message.setUserId(userId);
     message.setContent(randomMessage);
+    message.setChatId(chatId);
     message.setTimestamp(google_protobuf_timestamp_pb.Timestamp.fromDate(new Date()));
 
     return message;

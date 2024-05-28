@@ -80,8 +80,12 @@ spec:
               fieldPath: status.podIP
         - name: REDIS_READ_HOST
           value: "localhost"
+        - name: REDIS_READ_PORT
+          value: "6379"
         - name: REDIS_WRITE_HOST
           value: "primary.default.svc.cluster.local"
+        - name: REDIS_WRITE_PORT
+          value: "6379"
         resources:
           requests:
             cpu: "100m"
@@ -111,6 +115,11 @@ spec:
           - "no"
         ports:
           - containerPort: 6379
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "200m"
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -138,7 +147,7 @@ metadata:
   name: grpc-client
   namespace: grpc
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: grpc-client
@@ -153,6 +162,9 @@ spec:
           image: $GRPC_CLIENT_IMAGE
           ports:
             - containerPort: 3000
+          env:
+            - name: REACT_APP_ENVOY_URL
+              value: "https://$DOMAIN_NAME"
       restartPolicy: Always
 ---
 apiVersion: autoscaling/v2
