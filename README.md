@@ -21,7 +21,13 @@ Additionally to gRPC, the following technologies will be used:
 Clients enter a web page on which a chat is present. They automatically connect to it and can see live comments in real time as well as write their own to the chat. Each client may connect to a different server as the traffic is load balanced behind the scenes.
 
 ## Solution architecture
+AWS Architecture with EKS:
+
 ![aws architecture](./docs/aws-architecture.png "AWS Architecture")
+
+Server architecture with Redis:
+
+<img height="738" src="./docs/server-redis-architecture.png " alt="server-architecture"/>
 
 [Source](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer.html#deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer-architecture)
 
