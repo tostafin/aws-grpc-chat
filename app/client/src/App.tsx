@@ -18,7 +18,7 @@ import {Message, User} from './generated/broadcast_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import {generateRandomMessage, generateUID} from './chatMessages';
 
-const client = new BroadcastClient('https://mnessel.pl');
+const client = new BroadcastClient(process.env.REACT_APP_ENVOY_URL as string);
 const userId = generateUID();
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
     const [isSending, setIsSending] = useState(false);
     const [numMessages, setNumMessages] = useState(10000);
     const [batchSize, setBatchSize] = useState(100);
-    const [ytId, setYtId] = useState<string | null>(null); // State to store YouTube video ID
+    const [ytId, setYtId] = useState<string>("default");
 
     const onCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => setComment(e.target.value);
 
@@ -37,6 +37,7 @@ function App() {
         message.setUserId(userId);
         message.setContent(comment);
         message.setTimestamp(google_protobuf_timestamp_pb.Timestamp.fromDate(new Date()));
+        message.setChatId(ytId);
         client.broadcastMessage(message, () => {
         });
     };
@@ -49,7 +50,7 @@ function App() {
             const batch = Array.from({length: batchSize}, (_, index) => i + index).filter(index => index < totalMessages);
             await Promise.all(
                 batch.map(() => {
-                    let message = generateRandomMessage();
+                    let message = generateRandomMessage(ytId);
                     return new Promise<void>((resolve) => {
                         client.broadcastMessage(message, () => {
                             setProgress(prevProgress => prevProgress + 1);
@@ -66,9 +67,11 @@ function App() {
     useEffect(() => {
         const user = new User();
         user.setId(userId);
+        const chatId = new URLSearchParams(window.location.search).get('ytid') || 'default';
+        user.setChatId(chatId);
         const createAndListenStream = () => {
             const streamer = client.createStream(user);
-            streamer.on('status', status => console.log({status}));
+            streamer.on('status', status => setMessages([]));
             streamer.on('data', response => setMessages(prevMessages => [response, ...prevMessages].slice(0, 100)));
             streamer.on('end', () => {
                 setTimeout(createAndListenStream, 1000);
@@ -95,7 +98,7 @@ function App() {
     const onNumMessagesChange = (value: number) => {
         setNumMessages(value);
     };
-    const onBachSizeChange = (value: number) => {
+    const onBatchSizeChange = (value: number) => {
         setBatchSize(value);
     };
 
@@ -123,12 +126,12 @@ function App() {
                     </Flex>
                     <Flex align="center" justify="space-between">
                         <Slider
-                            aria-label="Bach size"
+                            aria-label="Batch size"
                             defaultValue={batchSize}
                             min={100}
                             max={5000}
                             step={100}
-                            onChange={onBachSizeChange}
+                            onChange={onBatchSizeChange}
                             w="75%"
                         >
                             <SliderTrack>
@@ -145,7 +148,7 @@ function App() {
                     </Button>
 
                     <Divider my="0.5rem"/>
-                    {ytId && (
+                    {ytId != "default" && (
                         <iframe
                             width="100%"
                             height="360"

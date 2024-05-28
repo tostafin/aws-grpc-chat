@@ -16,12 +16,21 @@ Additionally to gRPC, the following technologies will be used:
 - Docker
 - Kubernetes
 - Helm
+- Redis
+- Grafana
+- Prometheus
 
 ## Case study concept description
 Clients enter a web page on which a chat is present. They automatically connect to it and can see live comments in real time as well as write their own to the chat. Each client may connect to a different server as the traffic is load balanced behind the scenes.
 
 ## Solution architecture
+AWS Architecture with EKS:
+
 ![aws architecture](./docs/aws-architecture.png "AWS Architecture")
+
+Server architecture with Redis:
+
+<img height="738" src="./docs/server-redis-architecture.png " alt="server-architecture"/>
 
 [Source](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer.html#deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer-architecture)
 
@@ -59,7 +68,7 @@ Real clients can write to the chat and their messages will be displayed in real 
 ### Execution procedure
 Go to `mnessel.pl/app` in your browser to enter the web chat and start sending messages.
 
-You can add a `?ytid=` query param concatenated with a YouTube video/live ID to display it with the chat as well.
+You can add a `?ytid=` query param concatenated with a YouTube video/live ID to display it with an unique chat as well.
 
 ### Results presentation
 <img src="./docs/webpage.png" alt="webpage" width="720"/>
@@ -74,7 +83,7 @@ You can add a `?ytid=` query param concatenated with a YouTube video/live ID to 
 <img src="./docs/k9s.png" alt="k9s"/>
 
 ## Summary &mdash; conclusions
-The project showed us how to use gRPC in a distributed enviornment like the AWS Cloud. This allowed us to use load balancing to scale pods horizontally.
+The project showed us how to use gRPC in a distributed environment like the AWS Cloud. This allowed us to use load balancing to scale pods horizontally.
 
 ## References
 [Deploy a gRPC-based application on an Amazon EKS cluster and access it with an Application Load Balancer](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer.html)
