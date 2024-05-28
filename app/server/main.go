@@ -138,7 +138,7 @@ func saveAndPublishMessage(msg *pb.Message) error {
 
 func fetchLastMessages(chatID string, count int64) ([]*pb.Message, error) {
 	chatKey := "chat_messages:" + chatID
-	result, err := redisClient.LRange(context.Background(), chatKey, -count, -1).Result()
+	result, err := redisClient.LRange(context.Background(), chatKey, 0, count-1).Result()
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch messages from redis: %v", err)
 	}
