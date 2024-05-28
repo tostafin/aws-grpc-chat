@@ -24,13 +24,12 @@ Additionally to gRPC, the following technologies will be used:
 Clients enter a web page on which a chat is present. They automatically connect to it and can see live comments in real time as well as write their own to the chat. Each client may connect to a different server as the traffic is load balanced behind the scenes.
 
 ## Solution architecture
-AWS Architecture with EKS:
 
 ![aws architecture](./docs/aws-architecture.png "AWS Architecture")
+*Img. 1 AWS Architecture with EKS*
 
-Server architecture with Redis:
-
-<img height="738" src="./docs/server-redis-architecture.png " alt="server-architecture"/>
+![server architecture](./docs/server-redis-architecture.png "Server Architecture")
+*Img. 2 Server architecture with Redis*
 
 [Source](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer.html#deploy-a-grpc-based-application-on-an-amazon-eks-cluster-and-access-it-with-an-application-load-balancer-architecture)
 
@@ -71,16 +70,25 @@ Go to `mnessel.pl/app` in your browser to enter the web chat and start sending m
 You can add a `?ytid=` query param concatenated with a YouTube video/live ID to display it with an unique chat as well.
 
 ### Results presentation
-<img src="./docs/webpage.png" alt="webpage" width="720"/>
 
-<img src="./docs/grafana1.png" alt="grafana1"/>
-<img src="./docs/grafana2.png" alt="grafana2"/>
-<img src="./docs/grafana3.png" alt="grafana3"/>
-<img src="./docs/grafana4.png" alt="grafana4"/>
-<img src="./docs/grafana5.png" alt="grafana5"/>
-<img src="./docs/grafana6.png" alt="grafana6"/>
+![webpage](./docs/webpage.png "webpage")
+*Img. 3 View of an application*
 
-<img src="./docs/k9s.png" alt="k9s"/>
+![grafana1](./docs/grafana1.png "grafana1")
+*Img. 4 *
+![grafana2](./docs/grafana2.png "grafana2")
+*Img. 5 *
+![grafana3](./docs/grafana3.png "grafana3")
+*Img. 6 *
+![grafana4](./docs/grafana4.png "grafana4")
+*Img. 7 *
+![grafana5](./docs/grafana5.png "grafana5")
+*Img. 8 *
+![grafana6](./docs/grafana6.png "grafana6")
+*Img. 9 *
+
+![k9s](./docs/k9s.png "k9s")
+*Img. 10 *
 
 ## Summary &mdash; conclusions
 The project showed us how to use gRPC in a distributed environment like the AWS Cloud. This allowed us to use load balancing to scale pods horizontally.
