@@ -1,3 +1,5 @@
+#!/bin/sh
+
 OUT_DIR="./src/generated"
 
 protoc \

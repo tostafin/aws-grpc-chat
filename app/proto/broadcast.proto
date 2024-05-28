@@ -5,12 +5,14 @@ import "google/protobuf/timestamp.proto";
 
 message User {
   string id = 1;
+  string chat_id = 2;
 }
 
 message Message {
   string user_id = 1;
   string content = 2;
   google.protobuf.Timestamp timestamp = 3;
+  string chat_id = 4;
 }
 
 message Close {}

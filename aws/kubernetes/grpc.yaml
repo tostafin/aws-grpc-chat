@@ -3,6 +3,54 @@ kind: Namespace
 metadata:
   name: grpc
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: primary
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+      name: redis
+  selector:
+    name: redis-primary
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-primary
+  labels:
+    name: redis-primary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: redis-primary
+  template:
+    metadata:
+      labels:
+        name: redis-primary
+    spec:
+      containers:
+        - name: redis
+          image: redis
+          command:
+            - "redis-server"
+          args:
+            - "--protected-mode no"
+            - "--appendonly yes"
+            - "--appendfilename appendonly.aof"
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +78,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: REDIS_READ_HOST
+          value: "localhost"
+        - name: REDIS_WRITE_HOST
+          value: "primary.default.svc.cluster.local"
         resources:
           requests:
             cpu: "100m"
@@ -47,6 +99,18 @@ spec:
             cpu: "100m"
           limits:
             cpu: "200m"
+      - name: redis
+        image: redis
+        command:
+          - "redis-server"
+        args:
+          - "--slaveof"
+          - "primary.default.svc.cluster.local"
+          - "6379"
+          - "--protected-mode"
+          - "no"
+        ports:
+          - containerPort: 6379
       restartPolicy: Always
 ---
 apiVersion: v1
